@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "interactions",
     "users",
     "recipes",
+    'django_filters',
 ]
 
 
