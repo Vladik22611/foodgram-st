@@ -3,7 +3,10 @@ from djoser.serializers import UserSerializer
 from rest_framework import serializers
 from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
+
 from .models import Subscription
+from recipes.models import Recipe
+from recipes.base_serializers import ShortRecipeSerializer
 
 User = get_user_model()
 
@@ -31,7 +34,7 @@ class AvatarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('avatar',)
+        fields = ("avatar",)
 
 
 class CustomUserSerializer(UserSerializer):
@@ -63,3 +66,32 @@ class CustomUserSerializer(UserSerializer):
         if obj.avatar:
             return obj.avatar.url
         return None
+
+
+class SubscriptionSerializer(CustomUserSerializer):
+    """Сериализатор для подписок с дополнительной информацией о рецептах"""
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta(CustomUserSerializer.Meta):
+        fields = CustomUserSerializer.Meta.fields + ('recipes', 'recipes_count')
+
+    def get_recipes(self, obj):
+        """Возвращает рецепты автора с возможностью ограничения количества"""
+        request = self.context.get('request')
+        recipes = Recipe.objects.filter(author=obj)
+        
+        # Ограничение количества рецептов, если указан параметр
+        recipes_limit = request.query_params.get('recipes_limit') if request else None
+        if recipes_limit and recipes_limit.isdigit():
+            recipes = recipes[:int(recipes_limit)]
+        
+        return ShortRecipeSerializer(
+            recipes,
+            many=True,
+            context={'request': request}
+        ).data
+
+    def get_recipes_count(self, obj):
+        """Возвращает общее количество рецептов автора"""
+        return obj.recipes.count()

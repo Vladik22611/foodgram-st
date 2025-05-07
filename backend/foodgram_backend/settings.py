@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "rest_framework",
     "djoser",
-    "interactions",
     "users",
     "recipes",
     'django_filters',
@@ -67,6 +66,9 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 6,

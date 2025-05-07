@@ -1,4 +1,3 @@
-import base64
 from rest_framework import serializers
 from .models import Recipe, IngredientInRecipe, Ingredient
 from users.serializers import Base64ImageField, CustomUserSerializer
@@ -157,3 +156,6 @@ class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ["id", "name", "measurement_unit"]
+
+
+
