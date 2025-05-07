@@ -9,7 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
 
 
-from .models import Recipe, Ingredient, IngredientInRecipe, ShoppingCart, Favorite
+from .models import (Recipe, Ingredient, IngredientInRecipe,
+                     ShoppingCart, Favorite)
 from .serializers import (
     RecipeSerializer,
     IngredientSerializer,
@@ -21,21 +22,33 @@ User = get_user_model()
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet для просмотра ингредиентов.
+    """
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
     filter_backends = (filters.SearchFilter,)
-    # Определим, что значение параметра search должно быть началом искомой строки
+    # Определим, что значение параметра search должно быть началом
+    # искомой строки
     search_fields = ("^name",)
 
 
-
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet для управления рецептами.
+    """
+
     serializer_class = RecipeSerializer
     pagination_class = CustomPagination
     permission_classes = [RecipePermission]
 
     def get_queryset(self):
+        """
+        Фильтрует по автору, статусу избранного и статусу списка покупок.
+        Возвращает queryset рецептов с предварительной выборкой ингредиентов.
+        """
         queryset = Recipe.objects.all()
         user = self.request.user
         params = self.request.query_params
@@ -45,17 +58,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             author = get_object_or_404(User, id=author_id)
             queryset = queryset.filter(author=author)
 
-        # Фильтрация по избранному (только для авторизованных)
+        # Фильтрация по избранному
         if params.get("is_favorited") == "1":
             if user.is_authenticated:
                 queryset = queryset.filter(favorited_by__user=user)
-    
 
-        # Фильтрация по списку покупок (только для авторизованных)
+        # Фильтрация по списку покупок
         if params.get("is_in_shopping_cart") == "1":
             if user.is_authenticated:
                 queryset = queryset.filter(shoppingcart__user=user)
-            
 
         # Оптимизированный prefetch для ингредиентов
         prefetch = Prefetch(
@@ -63,16 +74,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
             queryset=IngredientInRecipe.objects.select_related("ingredient"),
         )
 
-        return queryset.select_related("author").prefetch_related(prefetch).distinct()
+        return (
+            queryset.select_related("author").prefetch_related(prefetch).distinct()
+        )
 
     def get_serializer_context(self):
+        """
+        Добавляет информацию о пользователе (избранные и корзина) в контекст.
+        """
         context = super().get_serializer_context()
         user = self.request.user
 
         if user.is_authenticated:
             # Одним запросом получаем все ID избранных рецептов
             context["user_favorites"] = set(
-                Favorite.objects.filter(user=user).values_list("recipe_id", flat=True)
+                Favorite.objects.filter(user=user).values_list("recipe_id",
+                                                               flat=True)
             )
 
             # Одним запросом получаем все ID рецептов в корзине
@@ -89,10 +106,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         try:
             serializer.is_valid(raise_exception=True)
         except serializers.ValidationError as e:
-            return Response({"errors": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"errors": e.detail},
+                            status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # На случай других ошибок (например, 404 при get_object_or_404)
-            return Response({"errors": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"errors": str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
@@ -101,10 +120,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
+        """
+        Сохранить новый рецепт с текущим юзером как автором.
+        """
         serializer.save(author=self.request.user)
 
     @action(detail=True, methods=["get"], url_path="get-link")
     def get_short_link(self, request, pk=None):
+        """
+        Генерация короткой ссылки на конкретный рецепт.
+        """
         recipe = self.get_object()
         code = base64.urlsafe_b64encode(str(recipe.id).encode()).decode().rstrip("=")
         return Response(
@@ -118,7 +143,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path="favorite",
     )
     def favorite_action(self, request, pk=None):
-        """Добавление/удаление рецепта из избранного."""
+        """
+        Добавление/удаление рецепта из избранного.
+        """
         return self._handle_recipe_action(
             request,
             model=Favorite,
@@ -133,7 +160,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path="shopping_cart",
     )
     def shopping_cart_action(self, request, pk=None):
-        """Добавление/удаление рецепта из списка покупок."""
+        """
+        Добавление/удаление рецепта из списка покупок.
+        """
         return self._handle_recipe_action(
             request,
             model=ShoppingCart,
@@ -144,7 +173,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def _handle_recipe_action(
         self, request, model, errors_already_exists, errors_not_exists
     ):
-        """Общая логика для добавления/удаления рецепта."""
+        """
+        Общая логика для добавления/удаления рецепта.
+        """
         recipe = self.get_object()
         user = request.user
 
@@ -230,6 +261,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 def redirect_short_link(request, code):
+    """
+    Перенаправление на конкретный рецепт на основе сгенерированного кода
+    короткой ссылки.
+    """
     try:
         padding = len(code) % 4
         if padding:

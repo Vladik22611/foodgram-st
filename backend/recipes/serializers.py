@@ -40,7 +40,8 @@ class RecipeSerializer(serializers.ModelSerializer):
                 "measurement_unit": ing.ingredient.measurement_unit,
                 "amount": ing.amount,
             }
-            for ing in obj.ingredients_in_recipe.select_related("ingredient").all()
+            for ing in
+            obj.ingredients_in_recipe.select_related("ingredient").all()
         ]
 
     def to_internal_value(self, data):
@@ -66,20 +67,20 @@ class RecipeSerializer(serializers.ModelSerializer):
     def validate(self, data):
         ingredients = data.get("ingredients", [])
 
-        # 1. Проверка на пустой список
+        # Проверка на пустой список
         if not ingredients:
             raise serializers.ValidationError(
                 {"ingredients": ["Добавьте хотя бы один ингредиент"]}
             )
 
-        # 2. Проверка на дубликаты
+        # Проверка на дубликаты
         ingredient_ids = [ing["id"] for ing in ingredients]
         if len(ingredient_ids) != len(set(ingredient_ids)):
             raise serializers.ValidationError(
                 {"ingredients": ["Ингредиенты не должны повторяться"]}
             )
 
-        # 3. Проверка существования ингредиентов
+        # Проверка существования ингредиентов
         existing_ids = set(
             Ingredient.objects.filter(id__in=ingredient_ids).values_list(
                 "id", flat=True
@@ -91,12 +92,13 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {
                     "ingredients": [
-                        f"Ингредиент с id {id} не существует" for id in missing_ids
+                        f"Ингредиент с id {id} не существует" for id in
+                        missing_ids
                     ]
                 }
             )
 
-        # 4. Проверка структуры каждого ингредиента
+        # Проверка структуры каждого ингредиента
         for ing in ingredients:
             if not isinstance(ing, dict):
                 raise serializers.ValidationError(
@@ -104,7 +106,11 @@ class RecipeSerializer(serializers.ModelSerializer):
                 )
             if "id" not in ing or "amount" not in ing:
                 raise serializers.ValidationError(
-                    {"ingredients": ["Каждый ингредиент должен содержать id и amount"]}
+                    {
+                        "ingredients": [
+                            "Каждый ингредиент должен" "содержать id и amount"
+                        ]
+                    }
                 )
             if not isinstance(ing["amount"], int) or ing["amount"] <= 0:
                 raise serializers.ValidationError(
@@ -156,6 +162,3 @@ class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ["id", "name", "measurement_unit"]
-
-
-
