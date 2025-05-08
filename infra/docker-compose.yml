@@ -23,7 +23,6 @@ services:
       - staticfiles:/backend_static/
       - mediafiles:/app/media/
   
-    
   frontend:
     container_name: foodgram-front
     build: ../frontend
