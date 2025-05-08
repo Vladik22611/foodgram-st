@@ -1,7 +1,7 @@
 import base64
 from rest_framework.decorators import action
 from django.db.models import Prefetch
-from rest_framework import viewsets, filters, status, serializers
+from rest_framework import viewsets, status, serializers
 from django.shortcuts import redirect, get_object_or_404
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
@@ -17,6 +17,7 @@ from .serializers import (
 )
 from .paginators import CustomPagination
 from .permissions import RecipePermission
+from .filters import IngredientSearchFilter
 
 User = get_user_model()
 
@@ -29,10 +30,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
-    filter_backends = (filters.SearchFilter,)
-    # Определим, что значение параметра search должно быть началом
-    # искомой строки
-    search_fields = ("^name",)
+    filter_backends = (IngredientSearchFilter,)
+    search_fields = ('^name',)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -75,7 +74,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
         return (
-            queryset.select_related("author").prefetch_related(prefetch).distinct()
+            queryset.select_related("author").prefetch_related(
+                prefetch).distinct()
         )
 
     def get_serializer_context(self):
@@ -131,7 +131,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Генерация короткой ссылки на конкретный рецепт.
         """
         recipe = self.get_object()
-        code = base64.urlsafe_b64encode(str(recipe.id).encode()).decode().rstrip("=")
+        code = base64.urlsafe_b64encode(str(
+            recipe.id).encode()).decode().rstrip("=")
         return Response(
             {"short-link": f"{request.build_absolute_uri('/')}foodgram/{code}"}
         )
@@ -226,7 +227,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         # Получаем все рецепты в корзине пользователя
-        cart_recipes = Recipe.objects.filter(shoppingcart__user=user).prefetch_related(
+        cart_recipes = Recipe.objects.filter(
+            shoppingcart__user=user).prefetch_related(
             "ingredients_in_recipe__ingredient"
         )
 
@@ -256,7 +258,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         # Создаем HTTP-ответ с файлом
         response = HttpResponse(content, content_type="text/plain")
-        response["Content-Disposition"] = 'attachment; filename="shopping_list.txt"'
+        response[
+            "Content-Disposition"] = 'attachment; filename="shopping_list.txt"'
         return response
 
 
@@ -272,6 +275,6 @@ def redirect_short_link(request, code):
 
         recipe_id = int(base64.urlsafe_b64decode(code.encode()).decode())
         recipe = Recipe.objects.get(pk=recipe_id)
-        return redirect(f"/api/recipes/{recipe.id}/")
+        return redirect(f"/recipes/{recipe.id}/")
     except (ValueError, Recipe.DoesNotExist):
         return Response({"error": "Not found"}, status=404)

@@ -112,7 +112,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                         ]
                     }
                 )
-            if not isinstance(ing["amount"], int) or ing["amount"] <= 0:
+            if int(ing["amount"]) <= 0:
                 raise serializers.ValidationError(
                     {
                         "ingredients": [
@@ -131,7 +131,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             IngredientInRecipe.objects.create(
                 recipe=recipe,
                 ingredient_id=ingredient["id"],
-                amount=ingredient["amount"],
+                amount=int(ingredient["amount"]),
             )
         return recipe
 
@@ -144,7 +144,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                 IngredientInRecipe.objects.create(
                     recipe=instance,
                     ingredient_id=ingredient["id"],
-                    amount=ingredient["amount"],
+                    amount=int(ingredient["amount"]),
                 )
 
         return super().update(instance, validated_data)
