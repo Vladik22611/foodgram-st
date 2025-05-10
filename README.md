@@ -1,7 +1,7 @@
 <h1 align="center">"Продуктовый помощник - Фудграм"</h1>
 
 <p align="center">
-    <a href="https://github.com/Vladik22611/foodgram-st/actions?query=workflow:CI/CD">
+    <a href="https://github.com/Vladik22611/foodgram-st/actions?query=workflow:main.yml">
         <img alt="GitHub - Test status" src="https://github.com/Vladik22611/foodgram-st/actions/workflows/main.yml/badge.svg">
     </a>
 </p>
