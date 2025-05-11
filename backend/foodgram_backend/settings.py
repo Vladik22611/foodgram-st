@@ -169,3 +169,6 @@ AUTH_USER_MODEL = "users.CustomUser"
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000'
 ]
+
+LANGUAGE_CODE = 'ru'
+USE_I18N = True 
