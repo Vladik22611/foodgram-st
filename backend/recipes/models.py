@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 
 User = get_user_model()
@@ -18,7 +17,8 @@ class Ingredient(models.Model):
     name = models.CharField(
         max_length=128, verbose_name="Название ингредиента", unique=True
     )
-    measurement_unit = models.CharField(max_length=64, verbose_name="Единица измерения")
+    measurement_unit = models.CharField(max_length=64,
+                                        verbose_name="Единица измерения")
 
     class Meta:
         constraints = [
@@ -129,7 +129,7 @@ class IngredientInRecipe(models.Model):
         verbose_name_plural = "Ингредиенты в рецептах"
 
     def __str__(self):
-        return f"{self.ingredient.name} - {self.amount} {self.ingredient.measurement_unit}" 
+        return f"{self.ingredient.name} - {self.amount} {self.ingredient.measurement_unit}"
 
 
 class UserRecipeRelation(models.Model):
@@ -159,7 +159,7 @@ class UserRecipeRelation(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username} → {self.recipe.name}" 
+        return f"{self.user.username} → {self.recipe.name}"
 
 
 class Favorite(UserRecipeRelation):
