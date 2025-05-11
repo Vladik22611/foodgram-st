@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 
 from .models import Subscription
 from recipes.models import Recipe
-from recipes.base_serializers import ShortRecipeSerializer
+from recipes.serializers import ShortRecipeSerializer
 
 User = get_user_model()
 

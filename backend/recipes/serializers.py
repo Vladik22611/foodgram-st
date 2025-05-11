@@ -3,6 +3,16 @@ from .models import Recipe, IngredientInRecipe, Ingredient
 from users.serializers import Base64ImageField, CustomUserSerializer
 
 
+class ShortRecipeSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для краткого read-only представления рецепта.
+    """
+    class Meta:
+        model = Recipe
+        fields = ("id", "name", "image", "cooking_time")
+        read_only_fields = fields  # Все поля только для чтения
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=True)
     ingredients = serializers.SerializerMethodField()  # Для вывода
