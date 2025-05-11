@@ -37,37 +37,35 @@ class IngredientAdmin(admin.ModelAdmin):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    """
-    Администрирование рецептов
-    """
-    list_display = (
-        'id', 'name', 'cooking_time', 'author',
-        'favorite_count', 'ingredients_list', 'image_preview'
-    )
+    list_display = ('id', 'name', 'cooking_time', 'author', 'favorite_count', 'ingredients_list', 'image_preview')
     search_fields = ('name', 'author__username', 'ingredients__name')
     list_filter = ('author', CookingTimeFilter)
-    list_select_related = ('author',)
     readonly_fields = ('image_preview',)
     list_per_page = 25
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
-            _favorite_count=Count('favorited_by', distinct=True),
+            _favorite_count=Count('favorite_relations', distinct=True),
             _ingredients_count=Count('ingredients', distinct=True)
-        ).prefetch_related('ingredients')
-
-    @admin.display(description='В избранном', ordering='_favorite_count')
-    def favorite_count(self, recipe):
-        return recipe._favorite_count
+        ).prefetch_related(
+            'ingredients',  # Для доступа к ингредиентам
+            'ingredients_in_recipe'  # Через related_name промежуточной модели
+        )
 
     @admin.display(description='Ингредиенты')
     def ingredients_list(self, recipe):
+        # Получаем все связи с ингредиентами через related_name
+        ingredients_links = recipe.ingredients_in_recipe.all(
+        ).select_related('ingredient')[:3]
+
         items = [
-            f"{ing.name} - {ing.amount}{ing.measurement_unit}"
-            for ing in recipe.ingredients.all()[:3]
+            f"{link.ingredient.name} - {link.amount}{link.ingredient.measurement_unit}"
+            for link in ingredients_links
         ]
+
         if recipe._ingredients_count > 3:
             items.append(f"...ещё {recipe._ingredients_count - 3}")
+
         return mark_safe("<br>".join(items)) if items else "-"
 
     @admin.display(description='Изображение')
@@ -77,6 +75,10 @@ class RecipeAdmin(admin.ModelAdmin):
                 f'<img src="{recipe.image.url}" style="max-height: 50px; max-width: 100px;">'
             )
         return "-"
+
+    @admin.display(description='Добавлений в избранное')
+    def favorite_count(self, recipe):
+        return recipe._favorite_count
 
 
 @admin.register(Favorite)
