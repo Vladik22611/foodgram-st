@@ -1,5 +1,6 @@
 from django.contrib.admin import SimpleListFilter
-from django.db.models import Count
+from django.db.models import Count, Avg, Subquery
+from .models import Recipe
 
 
 class HasRecipesFilter(SimpleListFilter):
@@ -22,50 +23,53 @@ class HasRecipesFilter(SimpleListFilter):
 
 
 class CookingTimeFilter(SimpleListFilter):
-    """
-    Фильтр по времени готовки с фиксированными порогами
-    """
+    """Интеллектуальный фильтр по времени готовки с автоматическими порогами"""
     title = 'Время приготовления'
     parameter_name = 'cooking_time'
 
-    FAST_THRESHOLD = 30
-    MEDIUM_THRESHOLD = 60
-
     def lookups(self, request, model_admin):
-        # Сохраняем model_admin для использования в queryset
-        self.model_admin = model_admin
-
-        # Получаем базовый queryset
-        base_qs = model_admin.get_queryset(request)
-
-        # Считаем количество для каждой категории
+        # Получаем статистику по текущим рецептам
+        stats = Recipe.objects.aggregate(
+            avg_time=Avg('cooking_time'),
+            median_time=Subquery(
+                Recipe.objects.order_by('cooking_time').values('cooking_time')[
+                    int(Recipe.objects.count() / 2)
+                ][:1]
+            )
+        )
+        
+        # Автоматические пороги на основе статистики
+        fast_threshold = int(stats['median_time'] * 0.7)
+        medium_threshold = int(stats['median_time'] * 1.5)
+        
+        # Подсчет количества в каждой группе
         counts = {
-            'fast': base_qs.filter(
-                cooking_time__lte=self.FAST_THRESHOLD).count(),
-            'medium': base_qs.filter(
-                cooking_time__gt=self.FAST_THRESHOLD,
-                cooking_time__lte=self.MEDIUM_THRESHOLD
+            'fast': Recipe.objects.filter(
+                cooking_time__lte=fast_threshold).count(),
+            'medium': Recipe.objects.filter(
+                cooking_time__gt=fast_threshold, 
+                cooking_time__lte=medium_threshold
             ).count(),
-            'slow': base_qs.filter(
-                cooking_time__gt=self.MEDIUM_THRESHOLD).count()
+            'slow': Recipe.objects.filter(
+                cooking_time__gt=medium_threshold).count()
         }
-
+        
         return (
-            ('fast',
-             f'Быстрые (до {self.FAST_THRESHOLD} мин) ({counts["fast"]})'),
-            ('medium', f'Средние ({self.FAST_THRESHOLD}-{self.MEDIUM_THRESHOLD} мин) ({counts["medium"]})'),
+            ('fast', f'Быстрые (до {fast_threshold} мин) ({counts["fast"]})'),
+            (
+                'medium',
+                f'Средние ({fast_threshold}-{medium_threshold} мин) ({counts["medium"]})'
+            ),
             ('slow',
-             f'Долгие (более {self.MEDIUM_THRESHOLD} мин) ({counts["slow"]})'),
+             f'Долгие (более {medium_threshold} мин) ({counts["slow"]})'),
         )
 
     def queryset(self, request, queryset):
         if self.value() == 'fast':
-            return queryset.filter(cooking_time__lte=self.FAST_THRESHOLD)
+            return queryset.filter(cooking_time__lte=30)
         if self.value() == 'medium':
-            return queryset.filter(
-                cooking_time__gt=self.FAST_THRESHOLD,
-                cooking_time__lte=self.MEDIUM_THRESHOLD
-            )
+            return queryset.filter(cooking_time__gt=30, cooking_time__lte=60)
         if self.value() == 'slow':
-            return queryset.filter(cooking_time__gt=self.MEDIUM_THRESHOLD)
-        return queryset
+            return queryset.filter(cooking_time__gt=60)
+        return queryset 
+    
