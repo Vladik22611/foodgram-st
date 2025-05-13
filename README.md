@@ -1,49 +1,27 @@
-<h1 align="center">"Продуктовый помощник - Фудграм"</h1>
 
-<p align="center">
-    <a href="https://github.com/Vladik22611/foodgram-st/actions?query=workflow:Main Foodgram workflow">
-        <img alt="GitHub - Test status" src="https://github.com/Vladik22611/foodgram-st/actions/workflows/main.yml/badge.svg">
-    </a>
-</p>
+#  Продуктовый помощник - Фудграм
 
-<h2 align="center">Стек технологий</h2>
+[![GitHub - Test status](https://github.com/Vladik22611/foodgram-st/actions/workflows/main.yml/badge.svg)](https://github.com/Vladik22611/foodgram-st/actions?query=workflow:MainFoodgramworkflow)
 
-<p align="center">
-    <a href="https://www.djangoproject.com/">
-        <img alt="Django" src="https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white">
-    </a>
-    <a href="https://www.django-rest-framework.org/">
-        <img alt="Django-REST-Framework" src="https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=gray">
-    </a>
-    <a href="https://www.postgresql.org/">
-        <img alt="PostgreSQL" src="https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white">
-    </a>
-    <a href="https://nginx.org/ru/">
-        <img alt="Nginx" src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white">
-    </a>
-    <a href="https://gunicorn.org/">
-        <img alt="gunicorn" src="https://img.shields.io/badge/gunicorn-%298729.svg?style=for-the-badge&logo=gunicorn&logoColor=white">
-    </a>
-    <a href="https://www.docker.com/">
-        <img alt="docker" src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white">
-    </a>
-</p>
+## Стек технологий
 
-<h2 align="center">Описание</h2>
+[![Django](https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![Django-REST](https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=gray)](https://www.django-rest-framework.org/)
+[![PostgreSQL](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/ru/)
+[![Gunicorn](https://img.shields.io/badge/gunicorn-%298729.svg?style=for-the-badge&logo=gunicorn&logoColor=white)](https://gunicorn.org/)
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-<p>
-  Foodgram — Ваш кулинарный цифровой помощник
+## Описание
 
-🍲 Публикуйте рецепты — Делитесь своими кулинарными шедеврами с сообществом
+Foodgram — Ваш кулинарный цифровой помощник
 
-❤️ Подписывайтесь на авторов — Следите за теми, чьи рецепты вас вдохновляют
+- Публикуйте рецепты — Делитесь своими кулинарными шедеврами с сообществом
+- Подписывайтесь на авторов — Следите за теми, чьи рецепты вас вдохновляют
+- Сохраняйте в «Избранное» — Создайте персональную кулинарную книгу из понравившихся рецептов
+- Умный список покупок — Генерируйте персональный shopping_list в формате .txt с ингредиентами для выбранных блюд
 
-📌 Сохраняйте в «Избранное» — Создайте персональную кулинарную книгу из понравившихся рецептов
-
-🛒 Умный список покупок — Генерируйте персональный shopping_list в формате .txt с ингредиентами для выбранных блюд
-</p>
-
-<h2 align="center">Запуск</h2>
+## Запуск
 
 ```shell
 # Склонировать репозиторий
@@ -51,11 +29,11 @@ git clone https://github.com/Vladik22611/foodgram-st.git
 ```
 
 > [!IMPORTANT]
-> Для работы PostgreSQL необходимо создать файл `.env` с переменными окружения в корневой директории проекта.</br>
+> Для работы PostgreSQL необходимо создать файл `.env` с переменными окружения в корневой директории проекта.  
 > Пример файла [./.env.example](https://github.com/Vladik22611/foodgram-st/blob/main/.env.example)
 
 > [!IMPORTANT]
-> Для дальнейшей работы понадобится Docker.</br>
+> Для дальнейшей работы понадобится Docker.  
 > Его можно установить с официального [сайта](https://www.docker.com/products/docker-desktop).
 
 1. Перейти в директорию ./infra
@@ -80,12 +58,12 @@ docker-compose up --build
 docker-compose exec foodgram_backend python manage.py createsuperuser
 ```
 
-<h3>
-    <a href="http://localhost:8000/admin/">Админ-зона</a><p></p>
-    <a href="http://localhost:8000/api/docs/">Документация</a>
-</h3> 
+### Админ-зона и документация
 
-<h2 align="center">GitHub Actions</h2>
+- [Админ-зона](http://localhost:8000/admin/)
+- [Документация](http://localhost:8000/api/docs/)
+
+## GitHub Actions
 
 ### Для работы с GitHub Actions необходимо в репозитории в разделе Secrets > Actions создать переменные окружения:
 
@@ -104,7 +82,7 @@ TELEGRAM_TOKEN          - токен бота, посылающего сообщ
 
 ## Автор:
 
-Гречкин Владсислав <br>
+Гречкин Владсислав  
 
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/g_vladislav22)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Vladik22611)
